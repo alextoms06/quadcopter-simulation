@@ -1,0 +1,15 @@
+../Core/Src/main.c:196:9:LSM6DSO_Detect	7
+../Core/Src/main.c:241:19:LSM6DSO_Init	3
+../Core/Src/main.c:300:19:LSM6DSO_ReadAccel	2
+../Core/Src/main.c:331:19:LSM6DSO_ReadGyro	2
+../Core/Src/main.c:359:6:Calculate_Attitude	4
+../Core/Src/main.c:443:7:PID_Update	9
+../Core/Src/main.c:498:6:PID_Reset	2
+../Core/Src/main.c:514:5:main	17
+../Core/Src/main.c:806:6:SystemClock_Config	3
+../Core/Src/main.c:853:13:MX_I2C1_Init	2
+../Core/Src/main.c:887:13:MX_TIM3_Init	9
+../Core/Src/main.c:958:13:MX_USART2_UART_Init	2
+../Core/Src/main.c:991:13:MX_GPIO_Init	1
+../Core/Src/main.c:1026:6:Motor_Mixer	9
+../Core/Src/main.c:1054:6:Error_Handler	1
