@@ -77,6 +77,7 @@ UART_HandleTypeDef huart2;
 HAL_StatusTypeDef lsm6a_status;
 HAL_StatusTypeDef lsm6b_status;
 HAL_StatusTypeDef lsm_id_status;
+uint8_t motors_armed = 0;
 uint8_t lsm6dso_address = 0;
 uint8_t lsm6dso_chip_id;
 
@@ -122,6 +123,7 @@ static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 
 /* USER CODE BEGIN PFP */
+void Motor_SetPWM(float m1, float m2, float m3, float m4);
 void Motor_Mixer(float throttle,
                  float roll_output,
                  float pitch_output,
@@ -777,6 +779,14 @@ int main(void)
                       roll_rate_output / 100.0f,
                       pitch_rate_output / 100.0f,
                       yaw_output);
+          if (motors_armed)
+          {
+              Motor_SetPWM(motor1, motor2, motor3, motor4);
+          }
+          else
+          {
+              Motor_SetPWM(0.0f, 0.0f, 0.0f, 0.0f);
+          }
 
           float roll_correction = roll_rate_output;
           float pitch_correction = pitch_rate_output;
@@ -1031,6 +1041,18 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void Motor_SetPWM(float m1, float m2, float m3, float m4)
+{
+    uint16_t pwm1 = 1000 + (uint16_t)(m1 * 1000.0f);
+    uint16_t pwm2 = 1000 + (uint16_t)(m2 * 1000.0f);
+    uint16_t pwm3 = 1000 + (uint16_t)(m3 * 1000.0f);
+    uint16_t pwm4 = 1000 + (uint16_t)(m4 * 1000.0f);
+
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, pwm1);
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_2, pwm3);
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_3, pwm2);
+    __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_4, pwm4);
+}
 void Motor_Mixer(float throttle,
                  float roll_output,
                  float pitch_output,
