@@ -90,7 +90,40 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
   if(hi2c->Instance==I2C1)
   {
     /* USER CODE BEGIN I2C1_MspInit 0 */
+    /* Enable GPIOB clock for bus recovery */
+    __HAL_RCC_GPIOB_CLK_ENABLE();
 
+    /* I2C Bus Recovery: if a slave sensor was interrupted and is holding SDA low,
+     * toggle SCL 16 times to allow the slave to finish its byte transfer and release SDA. */
+    GPIO_InitTypeDef GPIO_RecoverStruct = {0};
+    GPIO_RecoverStruct.Pin = GPIO_PIN_8 | GPIO_PIN_9;
+    GPIO_RecoverStruct.Mode = GPIO_MODE_OUTPUT_OD;
+    GPIO_RecoverStruct.Pull = GPIO_PULLUP;
+    GPIO_RecoverStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+    HAL_GPIO_Init(GPIOB, &GPIO_RecoverStruct);
+
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_SET);
+    for (int i = 0; i < 16; i++)
+    {
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+        for (volatile int d = 0; d < 200; d++);
+        HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+        for (volatile int d = 0; d < 200; d++);
+    }
+    /* Generate STOP condition */
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET);
+    for (volatile int d = 0; d < 200; d++);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
+    for (volatile int d = 0; d < 200; d++);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_SET);
+    for (volatile int d = 0; d < 200; d++);
+
+    /* Peripheral clock enable MUST occur before configuring Alternate Function pins */
+    __HAL_RCC_I2C1_CLK_ENABLE();
+
+    /* Force reset and release reset of I2C1 peripheral to ensure clean state */
+    __HAL_RCC_I2C1_FORCE_RESET();
+    __HAL_RCC_I2C1_RELEASE_RESET();
     /* USER CODE END I2C1_MspInit 0 */
 
     __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -100,7 +133,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
     */
     GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
     GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
-    GPIO_InitStruct.Pull = GPIO_NOPULL;
+    GPIO_InitStruct.Pull = GPIO_PULLUP;
     GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
     GPIO_InitStruct.Alternate = GPIO_AF4_I2C1;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
